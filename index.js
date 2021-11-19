@@ -161,9 +161,24 @@ async function getHotelInfo(url) {
         rooms.push(room);
       }
 
+      // Calculating the minimum price offered
+      const roomPricesArray = [];
+
+      roomPrices.forEach((room) => {
+        let roomPriceValue = Number(
+          room.innerHTML.substring(1, room.innerHTML.length)
+        );
+        roomPricesArray.push(roomPriceValue);
+      });
+      const minPriceIndex = roomPricesArray.findIndex(
+        (element) => element === Math.min(...roomPricesArray)
+      );
+      
+      const minPrice = roomPrices[minPriceIndex].innerHTML;
+
       data = {
         dates: dates,
-        roomPrices: roomPrices,
+        minPrice: minPrice,
         currency: currency,
         nRooms: nRooms,
         adults: adults,
@@ -175,18 +190,15 @@ async function getHotelInfo(url) {
 
       return data;
     });
-    // console.log(webData);
+    console.log(webData);
 
     // Getting checking and checkout dates
     const dates = getDates(webData.dates);
-    // Getting minimum price offered
-    // const minPrice = getMinPrice(webData.roomPrices);
-    // console.log(minPrice);
 
     const hotelData = {
       checkinDate: dates.inDate,
       checkoutDate: dates.outDate,
-      // minPrice: minPrice,
+      minPrice: webData.minPrice,
       currency: webData.currency,
       nRooms: webData.nRooms,
       adults: webData.adults,
@@ -196,7 +208,7 @@ async function getHotelInfo(url) {
       roomsDetails: webData.rooms,
     };
 
-    console.log(hotelData);
+    // console.log(hotelData);
 
     // return hotelData;
   } catch (error) {
