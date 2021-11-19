@@ -19,27 +19,36 @@ const puppeteer = require("puppeteer");
       const rooms = [];
       const titles = document.querySelectorAll(".CardList-summary-title");
       const prices = document.querySelectorAll(".CardList-price-title");
+      let language = document.querySelectorAll(
+        "#international-language-dropdown-id div span"
+      )[0].innerHTML;
+
+      const currency = document.querySelector(
+        "#international-language-dropdown-id div"
+      ).textContent;
+      var firstDotPos = currency.indexOf("(");
+      var secondDotPos = currency.indexOf(")");
+      var myCurrency = currency.substring(firstDotPos + 1, secondDotPos);
+
+      const guests = document.querySelectorAll(".HeaderButton-value div")[1]
+        .innerHTML;
+
+      const adults = guests.substring(0, 1);
+      const children = guests.substring(2, 3);
 
       for (let i = 0; i < titles.length; i++) {
         let room = {};
         room.title = titles[i].innerHTML;
         room.price = prices[i].innerHTML;
+
         rooms.push(room);
       }
 
-      return rooms;
-
-      // const priceInfo = [];
-
-      // for (let room of rooms) {
-      //   room.push(element.innerHTML);
-      // }
-
-      // return room;
+      return [adults, children, myCurrency, language, rooms];
     });
 
     console.log(prices);
-    console.log(prices.length);
+    // console.log(prices.length);
   } catch (error) {
     console.log("The page couldn't be loaded", error);
   }
@@ -61,38 +70,4 @@ const puppeteer = require("puppeteer");
    *    price: .CardList-price-title
    ************************/
 
-  /************************************************************************* 
-  // Examining elements web and getting url for each articles title
-  const enlaces = await page.evaluate(() => {
-    const elements = document.querySelectorAll(".has-post-thumbnail .card a");
-
-    const links = [];
-
-    for (let element of elements) {
-      links.push(element.href);
-    }
-
-    return links;
-  });
-
-  const books = [];
-
-  for (let enlace of enlaces) {
-    console.log(enlace);
-    await page.goto(enlace);
-    await page.waitForSelector("#main");
-
-    // const book = await page.evaluate(() => {
-    //   const tmp = {};
-    //   tmp.title = document.querySelector("#title").innerText;
-    //   tmp.author = document.querySelector("#author").innerText;
-    //   return tmpc;
-    // });
-    // books.push(book);
-  }
-
-  console.log(enlaces);
-  */
-
-  // await browser.close();
 })();
