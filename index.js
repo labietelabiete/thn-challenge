@@ -1,16 +1,9 @@
 const puppeteer = require("puppeteer");
 
-// 30-12/3-1
 const url =
   "https://reservations.travelclick.com/110426?datein=12%2F30%2F2021&dateout=01%2F03%2F2022&identifier=&_ga=2.233116887.859581762.1637252285-1760219410.1637252285#/accommodation/room";
 
-// const url =
-//   "https://reservations.travelclick.com/110426?datein=01%2F23%2F2022&dateout=01%2F30%2F2022&identifier=&_ga=2.265002822.859581762.1637252285-1760219410.1637252285#/accommodation/room";
-
-// Two months with 1 cifre each one 05-01/02-02
-// const url =
-//   "https://reservations.travelclick.com/110426?datein=01%2F05%2F2022&dateout=02%2F02%2F2022&identifier=&_ga=2.166977399.859581762.1637252285-1760219410.1637252285#/accommodation/room";
-
+// Auxiliar function to get month number from string
 function getMonthNumber(month) {
   switch (month) {
     case "Jan":
@@ -53,19 +46,19 @@ function getDates(dates) {
   let outDay;
 
   if (dates.length > 10) {
-    // Long date format from website
+    // Long date format from website (Dec 30-Jan 15)
     outMonth = getMonthNumber(dates.substring(sepPos + 1, sepPos + 4));
-    outDay = dates.substring(sepPos + 6, dates.length - 1);
+    outDay = dates.substring(sepPos + 5);
 
-    if (parseInt(outMonth) > parseInt(inMonth)) outYear = "2022";
+    if (parseInt(outMonth) < parseInt(inMonth)) outYear = "2022";
   } else {
-    // Short date format from website
+    // Short date format from website (May 15-25)
     outMonth = inMonth;
-    outDay = dates.substring(sepPos + 1, dates.length - 1);
+    outDay = dates.substring(sepPos + 1);
   }
 
   if (parseInt(inMonth) < 10) inMonth = "0" + inMonth;
-  if (parseInt(inDay) < 10) inDay = "0" + inDay;
+  if (parseInt(inDay) < 10) inDay = "0" + parseInt(inDay).toString();
   if (parseInt(outMonth) < 10) outMonth = "0" + outMonth;
   if (parseInt(outDay) < 10) outDay = "0" + outDay;
 
@@ -77,8 +70,21 @@ function getDates(dates) {
   return result;
 }
 
+function getMinPrice(pricesArray) {
+  // Building an array with the prices in number type to calculate the min price
+  const numbRoomPrices = [];
+
+  pricesArray.forEach((room) => {
+    let roomPriceValue = Number(
+      room.innerHTML.substring(1, room.innerHTML.length)
+    );
+    numbRoomPrices.push(roomPriceValue);
+  });
+  const result = Math.min(...numbRoomPrices);
+  return result;
+}
+
 async function getHotelInfo(url) {
-  // const browser = await puppeteer.launch({ headless: false });
   const browser = await puppeteer.launch();
 
   const page = await browser.newPage();
@@ -86,17 +92,17 @@ async function getHotelInfo(url) {
   try {
     await page.goto(url);
 
+    // Waiting for get the content loaded
     await page.waitForSelector("#AccommodationsListId");
 
-    console.log("Container loaded");
+    // Browsing through website
+    const webData = await page.evaluate(() => {
+      // Checking and checkout dates
+      const dates = document.querySelector(
+        `.HeaderButton-value [ng-show*="datesOfStay"]`
+      ).innerHTML;
 
-    const allRooms = await page.evaluate(() => {
-      let language = document.querySelectorAll(
-        "#international-language-dropdown-id div span"
-      )[0].innerHTML;
-      // Formatting language into two letters code
-      language = language.substring(0, 2).toUpperCase();
-
+      // Currency (example web format: (USD))
       let currency = document.querySelector(
         "#international-language-dropdown-id div"
       ).textContent;
@@ -105,12 +111,17 @@ async function getHotelInfo(url) {
         currency.indexOf(")")
       );
 
-      // const guests = document.querySelectorAll(".HeaderButton-value div")[1]
-      //   .innerHTML;
+      // Language (example web format: English)
+      let language = document.querySelectorAll(
+        "#international-language-dropdown-id div span"
+      )[0].innerHTML;
+      // Formatting language into two letters code
+      language = language.substring(0, 2).toUpperCase();
+
+      // Guests: adults and children (example web format: 1/1)
       const guests = document.querySelector(
         `.HeaderButton-value [ng-show*="guestsRooms && MRB"]`
       ).innerHTML;
-
       const adults = parseInt(guests.substring(0, 1));
       const children = parseInt(guests.substring(2, 3));
       const nGuests = adults + children;
@@ -150,54 +161,50 @@ async function getHotelInfo(url) {
         rooms.push(room);
       }
 
-      // Building an array with the prices in number type to calculate the min price
-      const numbRoomPrices = [];
+      data = {
+        dates: dates,
+        roomPrices: roomPrices,
+        currency: currency,
+        nRooms: nRooms,
+        adults: adults,
+        children: children,
+        guests: nGuests,
+        language: language,
+        rooms: rooms,
+      };
 
-      roomPrices.forEach((room) => {
-        let roomPriceValue = Number(
-          room.innerHTML.substring(1, room.innerHTML.length)
-        );
-        numbRoomPrices.push(roomPriceValue);
-      });
-
-      const minPrice = Math.min(...numbRoomPrices);
-
-      // Getting date
-      const dates = document.querySelector(
-        `.HeaderButton-value [ng-show*="datesOfStay"]`
-      ).innerHTML;
-
-      // const nPosition = dates.indexOf("-");
-
-      // let inMonth = dates.substring(0, 3);
-      // let inDay = dates.substring(nPosition - 2, nPosition);
-      // let outMonth = dates.substring(nPosition + 1, nPosition + 4);
-      // let outDay = dates.substring(nPosition + 6, dates.length - 1);
-
-      return [rooms, dates];
+      return data;
     });
-    console.log(allRooms);
-    const date = getDates(allRooms[1]);
-    console.log(date);
+    // console.log(webData);
+
+    // Getting checking and checkout dates
+    const dates = getDates(webData.dates);
+    // Getting minimum price offered
+    // const minPrice = getMinPrice(webData.roomPrices);
+    // console.log(minPrice);
+
+    const hotelData = {
+      checkinDate: dates.inDate,
+      checkoutDate: dates.outDate,
+      // minPrice: minPrice,
+      currency: webData.currency,
+      nRooms: webData.nRooms,
+      adults: webData.adults,
+      children: webData.children,
+      guests: webData.guests,
+      language: webData.language,
+      roomsDetails: webData.rooms,
+    };
+
+    console.log(hotelData);
+
+    // return hotelData;
   } catch (error) {
     console.log("The page couldn't be loaded, please check the url");
   }
 
   await browser.close();
-
-  /************************
-   * checking date yyyy-mm-dd
-   * checkout date yyyy-mm-dd
-   * minimum price (per night) -------------
-   * currency of price (3 ISO char) -----------------
-   * number of rooms searched ------------
-   * number of guests (adults and children) -----------
-   * total number of guests ------------
-   * language ----------------
-   * Data from minimum price (refundable, breakfast)
-   * Rates object with details --------------
-   ************************/
 }
 
-const infoHotel = getHotelInfo(url);
-console.log(infoHotel);
+getHotelInfo(url);
+// console.log(infoHotel);
