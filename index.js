@@ -70,20 +70,6 @@ function getDates(dates) {
   return result;
 }
 
-function getMinPrice(pricesArray) {
-  // Building an array with the prices in number type to calculate the min price
-  const numbRoomPrices = [];
-
-  pricesArray.forEach((room) => {
-    let roomPriceValue = Number(
-      room.innerHTML.substring(1, room.innerHTML.length)
-    );
-    numbRoomPrices.push(roomPriceValue);
-  });
-  const result = Math.min(...numbRoomPrices);
-  return result;
-}
-
 async function getHotelInfo(url) {
   const browser = await puppeteer.launch();
 
@@ -173,7 +159,7 @@ async function getHotelInfo(url) {
       const minPriceIndex = roomPricesArray.findIndex(
         (element) => element === Math.min(...roomPricesArray)
       );
-      
+
       const minPrice = roomPrices[minPriceIndex].innerHTML;
 
       data = {
@@ -190,7 +176,7 @@ async function getHotelInfo(url) {
 
       return data;
     });
-    console.log(webData);
+    // console.log(webData);
 
     // Getting checking and checkout dates
     const dates = getDates(webData.dates);
@@ -208,7 +194,7 @@ async function getHotelInfo(url) {
       roomsDetails: webData.rooms,
     };
 
-    // console.log(hotelData);
+    console.log(hotelData);
 
     // return hotelData;
   } catch (error) {
