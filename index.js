@@ -1,5 +1,6 @@
 const puppeteer = require("puppeteer");
 
+// Paste here your url from the hotel search
 const url =
   "https://reservations.travelclick.com/110426?datein=12%2F30%2F2021&dateout=01%2F03%2F2022&identifier=&_ga=2.233116887.859581762.1637252285-1760219410.1637252285#/accommodation/room";
 
@@ -70,7 +71,7 @@ function getDates(dates) {
   return result;
 }
 
-async function getHotelInfo(url) {
+(async () => {
   const browser = await puppeteer.launch();
 
   const page = await browser.newPage();
@@ -195,14 +196,9 @@ async function getHotelInfo(url) {
     };
 
     console.log(hotelData);
-
-    // return hotelData;
+    await browser.close();
+    return hotelData;
   } catch (error) {
     console.log("The page couldn't be loaded, please check the url");
   }
-
-  await browser.close();
-}
-
-getHotelInfo(url);
-// console.log(infoHotel);
+})();
