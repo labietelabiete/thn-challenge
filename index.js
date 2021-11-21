@@ -2,7 +2,7 @@ const puppeteer = require("puppeteer");
 
 // Paste here your url from the hotel search
 const url =
-  "https://reservations.travelclick.com/110426?datein=12%2F30%2F2021&dateout=01%2F03%2F2022&identifier=&_ga=2.233116887.859581762.1637252285-1760219410.1637252285#/accommodation/room";
+  "https://reservations.travelclick.com/110426?datein=12%2F12%2F2021&dateout=12%2F19%2F2021&identifier=&_ga=2.81258903.1842764875.1637513762-1760219410.1637252285#/accommodation/room";
 
 // Auxiliar function to get month number from string
 function getMonthNumber(month) {
