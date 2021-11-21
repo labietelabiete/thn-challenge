@@ -1,6 +1,6 @@
 # The Hotels Network tech challenge 👨‍💻<!-- omit in toc -->
 
-This project is a technical challenge by [The Hotels Network]([Petit Ermitage](https://www.thehotelsnetwork.com/es/)) to get relevant data from a search page of the hotel [Petit Ermitage](https://www.petitermitage.com/).
+This project is a technical challenge by [The Hotels Network](https://www.thehotelsnetwork.com/es/) to get relevant data from a search page of the hotel [Petit Ermitage](https://www.petitermitage.com/).
 
 # Table of contents <!-- omit in toc -->
 
