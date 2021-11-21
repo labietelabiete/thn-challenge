@@ -24,9 +24,6 @@
   },
   "homepage": "https://github.com/labietelabiete/thn-challenge#readme",
   "dependencies": {
-    "axios": "^0.24.0",
-    "cheerio": "*",
-    "prompt": "^1.2.0",
     "puppeteer": "^11.0.0"
   }
 }
