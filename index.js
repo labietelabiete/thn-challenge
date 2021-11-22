@@ -4,8 +4,10 @@ const puppeteer = require("puppeteer");
 const url =
   "https://reservations.travelclick.com/110426?datein=12%2F12%2F2021&dateout=12%2F19%2F2021&identifier=&_ga=2.81258903.1842764875.1637513762-1760219410.1637252285#/accommodation/room";
 
-// Auxiliar function to get month number from string
-function getMonthNumber(month) {
+/**
+ * Auxiliar function to get month number from string.
+ * @param {string} month - Month string format.
+ */ function getMonthNumber(month) {
   switch (month) {
     case "Jan":
       return "1";
@@ -36,8 +38,10 @@ function getMonthNumber(month) {
   }
 }
 
-// Auxiliar function to transform web date format to yyyy-mm-dd format
-function getDates(dates) {
+/**
+ * Auxiliar function to transform web date format to yyyy-mm-dd format.
+ * @param {string} dates - Date on string format 'XXX yy-XXX yy'.
+ */ function getDates(dates) {
   const sepPos = dates.indexOf("-");
   let inYear = "2021";
   let inMonth = getMonthNumber(dates.substring(0, 3));
@@ -71,7 +75,10 @@ function getDates(dates) {
   return result;
 }
 
-(async () => {
+/**
+ * Return the relevant information about reservation search.
+ * @param {string} url - The url of the searching on the hotel website.
+ */ async function getHotelInfo(url) {
   const browser = await puppeteer.launch();
 
   const page = await browser.newPage();
@@ -177,7 +184,6 @@ function getDates(dates) {
 
       return data;
     });
-    // console.log(webData);
 
     // Getting checking and checkout dates
     const dates = getDates(webData.dates);
@@ -195,10 +201,17 @@ function getDates(dates) {
       roomsDetails: webData.rooms,
     };
 
-    console.log(hotelData);
     await browser.close();
     return hotelData;
   } catch (error) {
-    console.log("The page couldn't be loaded, please check the url");
+    console.log("There was an error on the page, please check the url");
+    await browser.close();
   }
-})();
+}
+
+async function main() {
+  const hotelInfo = await getHotelInfo(url);
+  console.log(hotelInfo);
+}
+
+main();
